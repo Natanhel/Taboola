@@ -26,11 +26,12 @@ async function callBack(auth) {
     // Get data from each rack // TODO - check if can be avoided to save request
     const ranges = racks
         .map((rack) => {
-            return [`${rack}!A1:F${MAX_ROWS_TO_READ}`, `${rack}!F1:K${MAX_ROWS_TO_READ}`]
+            return [`${rack}!A1:F`, `${rack}!F1:K`]
         })
         .reduce((acc, curr) => {
             return acc.concat(curr)
         }, [])
+        console.log(ranges)
 
     sheets.spreadsheets.values.batchGet({
         spreadsheetId,
