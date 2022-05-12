@@ -12,7 +12,10 @@ const { getColumnTypeByTemplate } = require('./regex.js')
 
 // this is nto a pure function, it needs to edit rowObj
 function buildLineObject(rowObj, cell, rack) {
-    rowObj[getColumnTypeByTemplate(cell)] = cell.replace(/[^a-zA-Z0-9 .:]/g, ' ');
+    if(!isNaN(cell)) return
+    const type = getColumnTypeByTemplate(cell)
+    // I assume name comes with test_*
+    rowObj[type] = cell.replace(/[^a-zA-Z0-9 .:()_-]/g, ' ');
     rowObj.location = rack
 }
 
@@ -30,10 +33,10 @@ exports.parseRanges = (rangesRows) => {
                             // clean empty cells and number first cells
                             if (cell || isNaN(cell) && index === 0) {
                                 // if a cell contains \n or - we'll treat it as a new line
-                                let charToSplitBy = cell.includes('\n') ? '\n' : ' '
-                                charToSplitBy = cell.includes('-') ? '-' : charToSplitBy
+                                const cellHasLineBreak = cell.includes('\n')
+                                let charToSplitBy = cellHasLineBreak ? '\n' : ' '
 
-                                if (cell.includes('\n') || cell.includes('-')) {
+                                if (cellHasLineBreak) {
                                     // CAUTION if a name has dash (-) it will overwrite the name
                                     const cellSplitObj = {}
                                     cell.split(charToSplitBy).forEach((cellSplit) => {

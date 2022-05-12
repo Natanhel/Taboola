@@ -2,9 +2,9 @@
 // the column type of a cell based on the template of the cell.
 const regexs = [
     { name: 'ip', regex: /(\d+)\.(\d+)\.(\d+)\.(\d+)/g },
-    { name: 'mac', regex: /([0-9A-FZa-f]{2}[\.:-]{0,1}[0-9A-FZa-f]{2}[\.:-]){2}[0-9A-FZa-f]{2}[\.:-]{0,1}[0-9A-FZa-f]{2}/g },
+    { name: 'mac', regex: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/g },
+    { name: 'name', regex: /test_[-_0-9A-Za-z\s]*/ },
     { name: 'serial', regex: /[-0-9A-Za-z\s]{7,}/ },
-    { name: 'name', regex: /[-_0-9A-Za-z][-_0-9A-Za-z\s]*[-_0-9A-Za-z]/ }
 ]
 
 exports.getColumnTypeByTemplate = (str) => {

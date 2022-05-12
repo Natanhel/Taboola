@@ -5,6 +5,7 @@ const TABLE_NAME = 'data_center'
 const insertTable = (parsedRows) => {
     const sql = `INSERT INTO ${TABLE_NAME} (name, ip, mac, serial, location) VALUES ?`;
     var values = parsedRows.map(row => {
+        // console.log(row.name)
         return [
             row.name, // key, null not allowed
             row.ip || '',
@@ -22,11 +23,12 @@ const insertTable = (parsedRows) => {
 const createTable = (connection) => {
     const sql = `CREATE TABLE ${TABLE_NAME} 
         (
-            name VARCHAR(255), 
-            ip VARCHAR(255), 
-            mac VARCHAR(255), 
-            serial VARCHAR(255), 
-            location VARCHAR(255)
+            name CHAR(255), 
+            ip CHAR(255), 
+            mac CHAR(255), 
+            serial CHAR(255), 
+            location CHAR(255),
+            unknown CHAR(255)
         )`;
     connection.query(sql, function (err, result) {
         if (err) throw err;
@@ -49,19 +51,11 @@ const saveToDB = (parsedRows) => {
         if (err) throw err;
         console.log("Connected!");
     });
-
-    // most efficient way to check if table exist 
-    // according to https://stackoverflow.com/a/38778589/2382586
-    sql = `
-        SELECT count(*)
-        FROM information_schema.TABLES
-        WHERE (TABLE_SCHEMA = 'taboola') 
-          AND (TABLE_NAME = 'data_center')
-    `
+    sql = `show tables like '${TABLE_NAME}';`
+    
     connection.query(sql, function (err, result) {
         if (err) throw err;
-        // console.log(result[0]['count(*)'])
-        if (result[0]['count(*)'] === 0) { // table doesn't exists
+        if (!result.length) { // table doesn't exists
             console.log("Table doesn't exist creating new table", err);
         } else { // table exists
             deleteTable(connection) // delete all data

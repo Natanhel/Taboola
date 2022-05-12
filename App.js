@@ -1,10 +1,11 @@
-const spreadsheetId = '1WaSeM0q_ecSqASt28sJvCUhyEfSeC9INRtZD4HBkwq4'
-
 const fs = require('fs');
 const { google } = require('googleapis');
 const { authorize } = require('./utils/auth.js')
 const { parseRanges } = require('./utils/parser.js')
 const { saveToDB } = require('./utils/db_dc_crud.js')
+
+const MAX_ROWS_TO_READ = 70;
+const spreadsheetId = '1WaSeM0q_ecSqASt28sJvCUhyEfSeC9INRtZD4HBkwq4'
 
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
@@ -13,7 +14,6 @@ fs.readFile('credentials.json', (err, content) => {
     authorize(JSON.parse(content), callBack);
 });
 
-const MAX_ROWS_TO_READ = 70;
 
 async function callBack(auth) {
     const sheets = google.sheets({ version: 'v4', auth });
