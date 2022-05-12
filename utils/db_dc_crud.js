@@ -3,15 +3,15 @@ const { connection } = require('./mysql_connection.js')
 const TABLE_NAME = 'data_center'
 
 const insertTable = (parsedRows) => {
-    const sql = `INSERT INTO ${TABLE_NAME} (name, ip, mac, serial, location) VALUES ?`;
+    const sql = `INSERT INTO ${TABLE_NAME} (name, ip, mac, serial, location, unknown) VALUES ?`;
     var values = parsedRows.map(row => {
-        // console.log(row.name)
         return [
             row.name, // key, null not allowed
             row.ip || '',
             row.mac || '',
             row.serial || '',
-            row.location // key, null not allowed
+            row.location, // key, null not allowed
+            row.unknown // key, null not allowed
         ]
     })
     connection.query(sql, [values], function (err, result) {

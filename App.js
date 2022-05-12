@@ -4,7 +4,6 @@ const { authorize } = require('./utils/auth.js')
 const { parseRanges } = require('./utils/parser.js')
 const { saveToDB } = require('./utils/db_dc_crud.js')
 
-const MAX_ROWS_TO_READ = 70;
 const spreadsheetId = '1WaSeM0q_ecSqASt28sJvCUhyEfSeC9INRtZD4HBkwq4'
 
 // Load client secrets from a local file.
@@ -22,8 +21,9 @@ async function callBack(auth) {
         spreadsheetId
     })).data.sheets.map((sheet) => {
         return sheet.properties.title
-    })
+    }).slice(0,1)
     // Get data from each rack // TODO - check if can be avoided to save request
+    // Sheets are divided by 2, we handle both as a different sheet on the same rack. 
     const ranges = racks
         .map((rack) => {
             return [`${rack}!A1:F`, `${rack}!F1:K`]
@@ -31,7 +31,6 @@ async function callBack(auth) {
         .reduce((acc, curr) => {
             return acc.concat(curr)
         }, [])
-        console.log(ranges)
 
     sheets.spreadsheets.values.batchGet({
         spreadsheetId,
@@ -39,7 +38,7 @@ async function callBack(auth) {
     }, (err, res) => {
         if (err) return console.log('The API returned an error: ' + err);
         const rangesRows = res.data.valueRanges;
-        const parsedRows = parseRanges(rangesRows)
+        const parsedRows = parseRanges(rangesRows, racks)
         saveToDB(parsedRows)
     });
 }
