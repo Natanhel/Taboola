@@ -6,20 +6,22 @@
 //     mac: '',
 //     serial: '',
 //     rack: ''
+//     unknown: ''
 // }
 
 const { getColumnTypeByTemplate } = require('./regex.js')
+const LIMIT_NAME_SPLIT = 2
+const replaceRegex = /[^a-zA-Z0-9 .:()_-]/g
 
 // this is nto a pure function, it needs to edit rowObj
 function buildLineObject(rowObj, cell, rack) {
     if (!isNaN(cell)) return
     const type = getColumnTypeByTemplate(cell)
-    // I assume name comes with test_*
-    if (type === 'unknown' && !!rowObj[type]) { // if it's unkown we wouldn't want to lose the data
-        rowObj[type] += ' ' + cell.replace(/[^a-zA-Z0-9 .:()_-]/g, ' ')
-    } else {
-        rowObj[type] = cell.replace(/[^a-zA-Z0-9 .:()_-]/g, ' ')
-    }
+    // if it's unkown we wouldn't want to lose the data 
+    // To handle this situation we append it to the unknown field
+    const shouldAppend = type === 'unknown' && !!rowObj[type]
+    const cellReplaced = cell.replace(replaceRegex, ' ')
+    rowObj[type] = shouldAppend ? `${rowObj[type]} ${cellReplaced}` : cellReplaced
     rowObj.location = rack
 }
 
@@ -38,16 +40,23 @@ exports.parseRanges = (rangesRows, racks) => {
                         if (cell || isNaN(cell) && index === 0) {
                             // if a cell contains \n or - we'll treat it as a new line in our file
                             const cellHasLineBreak = cell.includes('\n') || cell.includes('-')
-                            if (cellHasLineBreak) {
-                                const splitChar = cell.includes('\n') ? '\n' : '-'
+
+                            const splitChar = cell.includes('\n') ? '\n' : '-'
+                            const cellSplit = cell.split(splitChar)
+
+                            // in this case, we check whether the split was justified,
+                            // the data split should have at least 2 elements else, we'll parse it
+                            // completely beacuse of the data structured in the DC
+                            const shouldSplit = cellSplit.length > LIMIT_NAME_SPLIT
+                            if (cellHasLineBreak && shouldSplit) {
                                 // CAUTION if a name has dash (-) it will overwrite the name
                                 const cellSplitObj = {}
-                                cell.split(splitChar).forEach((cellSplit) => {
-                                    buildLineObject(cellSplitObj, cellSplit, rack)
+                                cellSplit.forEach((cellSplit) => {
+                                    buildLineObject(cellSplitObj, cellSplit.trim(), rack)
                                 })
-                                Object.keys(cellSplitObj).length > 0 && rowsRes.push(cellSplitObj)
+                                rowsRes.push(cellSplitObj)
                             } else {
-                                buildLineObject(rowObj, cell, rack)
+                                buildLineObject(rowObj, cell.trim(), rack)
                             }
                         }
                     });

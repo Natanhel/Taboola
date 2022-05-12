@@ -21,7 +21,7 @@ async function callBack(auth) {
         spreadsheetId
     })).data.sheets.map((sheet) => {
         return sheet.properties.title
-    }).slice(0,1)
+    })
     // Get data from each rack // TODO - check if can be avoided to save request
     // Sheets are divided by 2, we handle both as a different sheet on the same rack. 
     const ranges = racks
