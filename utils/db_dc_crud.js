@@ -2,28 +2,11 @@ const { connection } = require('./mysql_connection.js')
 
 const TABLE_NAME = 'data_center'
 
-const insertTable = (parsedRows) => {
-    const sql = `INSERT INTO ${TABLE_NAME} (line, name, ip, mac, serial, location, unknown) VALUES ?`
-    var values = parsedRows.map((row,index) => {
-        return [
-            index,
-            row.name, // key, null not allowed
-            row.ip || '',
-            row.mac || '',
-            row.serial || '',
-            row.location, // key, null not allowed
-            row.unknown // key, null not allowed
-        ]
-    })
-    connection.query(sql, [values], function (err, result) {
-        if (err) throw err
-        console.log("Number of records inserted: " + result.affectedRows)
-    });
-}
-
 const createTable = (connection) => {
-    // I could add IF NOT EXISTS and shorten the code
-    //  but I want a clean DB every run
+    // I could add IF NOT EXISTS and shorten the code and connections
+    // but I want a clean DB every run so I'll leave it as is
+    // The 'IF NOT EXISTS' command updates the table if it exists
+    // which is not what I want
     const sql = `CREATE TABLE ${TABLE_NAME} 
         (
             line CHAR(255),
@@ -48,6 +31,24 @@ const deleteTable = (connection) => {
     });
 }
 
+const insertTable = (parsedRows) => {
+    const sql = `INSERT INTO ${TABLE_NAME} (line, name, ip, mac, serial, location, unknown) VALUES ?`
+    var values = parsedRows.map((row,index) => {
+        return [
+            index,
+            row.name, // key, null not allowed
+            row.ip || '',
+            row.mac || '',
+            row.serial || '',
+            row.location, // key, null not allowed
+            row.unknown // key, null not allowed
+        ]
+    })
+    connection.query(sql, [values], function (err, result) {
+        if (err) throw err
+        console.log("Number of records inserted: " + result.affectedRows)
+    });
+}
 
 const saveToDB = (parsedRows) => {
     let sql = ''
