@@ -22,11 +22,10 @@ async function callBack(auth) {
     })).data.sheets.map((sheet) => {
         return sheet.properties.title
     })
-    // Get data from each rack // TODO - check if can be avoided to save request
-    // Sheets are divided by 2, we handle both as a different sheet on the same rack. 
+
     const ranges = racks
         .map((rack) => {
-            return [`${rack}!A1:F`, `${rack}!F1:K`]
+            return [`${rack}!A1:K`]
         })
         .reduce((acc, curr) => {
             return acc.concat(curr)
