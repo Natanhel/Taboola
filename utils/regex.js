@@ -11,11 +11,11 @@ const regexs = [
     { name: 'mac', regex: /([0-9A-Fa-fZ]{2}[:-]){5}([0-9A-Fa-fZ]{2})/g },
     { name: 'mac', regex: /([0-9a-fA-FZ]{4}\.[0-9a-fA-FZ]{4}\.?[0-9a-fA-FZ]{4})/g },
 
-    // I assume name starts with test*
+    // I assume name starts with test*, storage* or xxXX*
     // { name: 'name', regex: /test[-_0-9A-Za-z()\s]*/g },
-    { name: 'name', regex: /([0-9]{4}|[a-z]{3}|test|storage|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
+    { name: 'name', regex: /(test|storage|[a-z]{2}?[A-Z]{2}?)[-_0-9 ()\s]*/g },
 
-    { name: 'serial', regex: /[-0-9A-Z\s]{6,7}/g },
+    { name: 'serial', regex: /[-0-9A-Z\s]{6,7}|[TAG]/g },
 ]
 
 exports.getColumnTypeByTemplate = (str) => {
