@@ -10,26 +10,27 @@ const spreadsheetId = '1WaSeM0q_ecSqASt28sJvCUhyEfSeC9INRtZD4HBkwq4'
 fs.readFile('credentials.json', (err, content) => {
     if (err) return console.log('Error loading client secret file:', err);
     // Authorize a client with credentials, then call the Google Sheets API.
-    authorize(JSON.parse(content), callBack);
+    authorize(JSON.parse(content), main);
 });
 
-
-async function callBack(auth) {
-    const sheets = google.sheets({ version: 'v4', auth });
-    // Get spreadsheet data
-    const racks = (await sheets.spreadsheets.get({
+const getPagesFromSheets = async (sheets) => {
+    const pages = (await sheets.spreadsheets.get({
         spreadsheetId
-    })).data.sheets.map((sheet) => {
-        return sheet.properties.title
-    })
+    })).data.sheets.map((sheet) => sheet.properties.title)
+    return pages
+}
 
-    const ranges = racks
-        .map((rack) => {
-            return [`${rack}!A1:K`]
-        })
-        .reduce((acc, curr) => {
-            return acc.concat(curr)
-        }, [])
+const buildRangesFromPages = (pages) => {
+    return pages
+        .map((page) => [`${page}!A1:K`])
+        .reduce((acc, curr) => acc.concat(curr), [])
+}
+
+async function main(auth) {
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const pages = await getPagesFromSheets(sheets)
+    const ranges = buildRangesFromPages(pages)
 
     sheets.spreadsheets.values.batchGet({
         spreadsheetId,
@@ -37,7 +38,7 @@ async function callBack(auth) {
     }, (err, res) => {
         if (err) return console.log('The API returned an error: ' + err);
         const rangesRows = res.data.valueRanges;
-        const parsedRows = parseRanges(rangesRows, racks)
+        const parsedRows = parseRanges(rangesRows, pages)
         saveToDB(parsedRows)
     });
 }

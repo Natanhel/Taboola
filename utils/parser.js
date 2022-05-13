@@ -57,9 +57,11 @@ const parseRow = (row, rack, rowsRes) => {
     let rowObj = {}
     // loop over each col in the row
     row.forEach((col) => {
-        // clean empty cols and number first cols
+        // clean empty cols and number in the first column
+        // we can save this data if we want, but I have been told I can ignore
+        // data that isn't under a title
         if (col || isNaN(col) && index === 0) {
-            // if a col contains \n or - we'll treat it as a new line in our file
+            // if a col contains \n or '-' we'll treat it as a new line in our file
             const colHasLineBreak = col.includes('\n') || col.includes('-')
             const splitChar = col.includes('\n') ? '\n' : '-'
             const colSplit = col.split(splitChar)
@@ -76,10 +78,10 @@ const parseRow = (row, rack, rowsRes) => {
     });
 }
 
-exports.parseRanges = (rangesRows, racks) => {
+exports.parseRanges = (rangesRows, pages) => {
     const rowsRes = []
     rangesRows.forEach((range, i) => {
-        const rack = racks[i] // get the rack name
+        const rack = pages[i] // get current rack name
         const rows = range.values
         if (rows.length) {
             rows.forEach((row) => parseRow(row, rack, rowsRes));
