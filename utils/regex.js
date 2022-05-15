@@ -11,10 +11,25 @@ const regexs = [
     { name: 'mac', regex: /([0-9A-Fa-fZ]{2}[:-]){5}([0-9A-Fa-fZ]{2})/g },
     { name: 'mac', regex: /([0-9a-fA-FZ]{4}\.[0-9a-fA-FZ]{4}\.?[0-9a-fA-FZ]{4})/g },
 
-    // I assume name starts with test*, storage* or xxXX*
-    { name: 'name', regex: /(test|storage|[a-z]{2}?[A-Z]{2}?)[-_0-9 ()\s]*/g },
+    // I assume name starts with rest*, test*, storage*, node* or xxXX*
+    // assumed 'empty' is a name as well.
+    { name: 'name', regex: /DELL-[A-Z0-9]*/g },
+    { name: 'name', regex: /PDU A RED/g },
+    { name: 'name', regex: /PDU A BLUE/g },
+    { name: 'name', regex: /PDU B RED/g },
+    { name: 'name', regex: /PDU B BLUE/g },
+    { name: 'name', regex: /node[0-9]{3}/g },
+    { name: 'name', regex: /ml[0-9]{3}/g },
+    { name: 'name', regex: /art[0-9]{3}/g },
+    { name: 'name', regex: /ptt[0-9]{3}/g },
+    { name: 'name', regex: /([a-z]{3})[0-9]{3}/g },
+    { name: 'name', regex: /rd-db|empty/g },
+    { name: 'name', regex: /0001 \(8disk\) ZZb-slave/g },
 
-    { name: 'serial', regex: /[-0-9A-Z\s]{6,7}|[TAG]/g },
+    // { name: 'name', regex: /tes_-[-_0-9 ()\s]*/g },
+    { name: 'name', regex: /(\?\?\?|T999|qa|HP|T777|7777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
+
+    { name: 'serial', regex: /[-0-9A-Z\s]{5,7}|[TAG\:][-0-9A-Z\s]*/g },
 ]
 
 exports.getColumnTypeByTemplate = (str) => {

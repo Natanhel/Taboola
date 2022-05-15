@@ -28,9 +28,9 @@ const buildRangesFromPages = (pages) => {
 
 async function main(auth) {
     const sheets = google.sheets({ version: 'v4', auth });
-
+    // const pageSlice = 3
     const pages = await getPagesFromSheets(sheets)
-    const ranges = buildRangesFromPages(pages)
+    const ranges = buildRangesFromPages(pages)//.slice(pageSlice-1,pageSlice)
 
     sheets.spreadsheets.values.batchGet({
         spreadsheetId,
