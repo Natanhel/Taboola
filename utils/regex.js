@@ -22,12 +22,13 @@ const regexs = [
     { name: 'name', regex: /ml[0-9]{3}/g },
     { name: 'name', regex: /art[0-9]{3}/g },
     { name: 'name', regex: /ptt[0-9]{3}/g },
+    { name: 'name', regex: /7777 [-_0-9 ()\s]*/g },
     { name: 'name', regex: /([a-z]{3})[0-9]{3}/g },
     { name: 'name', regex: /rd-db|empty/g },
     { name: 'name', regex: /0001 \(8disk\) ZZb-slave/g },
 
     // { name: 'name', regex: /tes_-[-_0-9 ()\s]*/g },
-    { name: 'name', regex: /(\?\?\?|T999|qa|HP|T777|7777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
+    { name: 'name', regex: /(\?\?\?|T999|qa|HP|T777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
 
     { name: 'serial', regex: /[-0-9A-Z\s]{5,7}|[TAG\:][-0-9A-Z\s]*/g },
 ]
