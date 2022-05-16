@@ -2,7 +2,7 @@ const { connection } = require('./mysql_connection.js')
 
 const TABLE_NAME = 'data_center'
 
-const createTable = (connection) => {
+const createTable = () => {
     // I could add IF NOT EXISTS and shorten the code and connections
     // but I want a clean DB every run so I'll leave it as is
     // The 'IF NOT EXISTS' command updates the table if it exists
@@ -17,15 +17,15 @@ const createTable = (connection) => {
             location CHAR(255),
             unknown CHAR(255)
         )`;
-    connection.query(sql, function (err, result) {
+        connection.query(sql, function (err) {
         if (err) throw err
         console.log("Table created")
     });
 }
 
-const deleteTable = (connection) => {
+const deleteTable = () => {
     const sql = `DROP TABLE ${TABLE_NAME}`
-    connection.query(sql, function (err, result) {
+    connection.query(sql, function (err) {
         if (err) throw err;
         console.log("Table dropped")
     });
@@ -33,9 +33,9 @@ const deleteTable = (connection) => {
 
 const insertTable = (parsedRows) => {
     const sql = `INSERT INTO ${TABLE_NAME} (line, name, ip, mac, serial, location, unknown) VALUES ?`
-    var values = parsedRows.map((row,index) => {
+    var values = parsedRows.map((row) => {
         return [
-            index,
+            row.lineIndex,
             row.name, // key, null not allowed
             row.ip || '',
             row.mac || '',

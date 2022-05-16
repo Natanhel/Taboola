@@ -14,10 +14,9 @@ fs.readFile('credentials.json', (err, content) => {
 });
 
 const getPagesFromSheets = async (sheets) => {
-    const pages = (await sheets.spreadsheets.get({
+    return (await sheets.spreadsheets.get({
         spreadsheetId
     })).data.sheets.map((sheet) => sheet.properties.title)
-    return pages
 }
 
 const buildRangesFromPages = (pages) => {
@@ -28,9 +27,8 @@ const buildRangesFromPages = (pages) => {
 
 async function main(auth) {
     const sheets = google.sheets({ version: 'v4', auth });
-    // const pageSlice = 1 // used to test single sheet
     const pages = await getPagesFromSheets(sheets)
-    const ranges = buildRangesFromPages(pages)//.slice(pageSlice-1,pageSlice)
+    const ranges = buildRangesFromPages(pages)
 
     sheets.spreadsheets.values.batchGet({
         spreadsheetId,

@@ -13,12 +13,12 @@ const regexs = [
 
     // I assume name starts with rest*, test*, storage*, node* or xxXX*
     // assumed 'empty' is a name as well.
-    { name: 'unknown', regex: /PDU (A|B)[ ]*(BLUE|RED)/g },
+    { name: 'unknown', regex: /PDU [AB][ ]*(BLUE|RED)/g },
     { name: 'unknown', regex: /0001 \(8 disks\)/g },
+    { name: 'unknown', regex: /[-_0-9 ()\s]*port[-_0-9 ()\s]*/g },
     { name: 'name', regex: /(node|[a-z]{2,3})[0-9Z]{3}/g },
-    { name: 'name', regex: /rd-db|empty/g },
-    { name: 'name', regex: /0001 \(8disk\) ZZb-slave/g },
-    { name: 'name', regex: /(7777 |DELL|T999|qa|HP|T777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
+    { name: 'name', regex: /rd-db|empty|0001 \(8disk\) ZZb-slave/g },
+    { name: 'name', regex: /(7777 |DELL|T999|qa|HP|T777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9()\s]*/g },
 
     { name: 'serial', regex: /[-0-9A-Z\s]{5,7}|[TAG\:][-0-9A-Z\s]*/g },
 ]
