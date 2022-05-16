@@ -12,7 +12,8 @@
 const { getColumnTypeByTemplate, regexTypes } = require('./regex.js')
 
 // CONSTS
-const LIMIT_NAME_SPLIT = BASE_AMOUNT_KEYS = 2
+const LIMIT_NAME_SPLIT = 2
+const BASE_AMOUNT_KEYS = 2
 const MAX_COLUMNS_IN_DB = 4
 
 // ITERABLE CASES LISTS
@@ -145,7 +146,7 @@ const parseRow = (row, rack, rowsRes) => {
     // using C style 'for' because I manipulate the iterator
     for (let i = 0; !shouldSkipRow && i < row.length; i++) {
         const col = row[i]
-        let rowObj = {}
+        let rowObj = {} // empty object for next line in DB
         let colSplit
         // clean empty cols and number in the first column
         // we can save this data if we want, but I have been told I can ignore
@@ -170,7 +171,6 @@ const parseRow = (row, rack, rowsRes) => {
                 i += MAX_COLUMNS_IN_DB - 1 // if we found a line, continue to the next line
                 // there's a caveat here, edge case handled inside handleNextColsLineAsLine()
             }
-            rowObj = {} // empty object for next line in DB
         }
     }
 }
