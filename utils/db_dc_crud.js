@@ -63,9 +63,9 @@ const saveToDB = (parsedRows) => {
         if (!result.length) { // table doesn't exists
             console.log("Table doesn't exist creating new table", err)
         } else { // table exists
-            deleteTable(connection) // delete all data
+            deleteTable() // delete all data
         }
-        createTable(connection)
+        createTable()
         insertTable(parsedRows)
         connection.end()
     });
