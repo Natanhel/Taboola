@@ -1,5 +1,9 @@
 {
+  "scripts": {
+    "dev": "nodemon -r dotenv/config ./App.js"
+  },
   "dependencies": {
+    "dotenv": "^16.0.1",
     "googleapis": "^39.2.0",
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.16"
