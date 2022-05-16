@@ -22,7 +22,7 @@ function buildLineObject(rowObj, col) {
     const type = getColumnTypeByTemplate(col)
     // if it's an overwrite we wouldn't want to lose the data 
     // To handle this situation we append it to the type field
-    const colSanitized = col.replace(replaceRegex, ' ') // sanitized
+    const colSanitized = trimAndReplace(col) // sanitized
     rowObj[type] = colSanitized// typeExists ? `${rowObj[type]} ${colSanitized}` : colSanitized
 }
 
@@ -30,7 +30,7 @@ const handleSheetSingleColumnAsLine = (rowsRes, nextCol, colSplit, rack) => {
 
     const colSplitObj = {}
     colSplit.forEach((colSplit) => {
-        buildLineObject(colSplitObj, colSplit.trim())
+        buildLineObject(colSplitObj, colSplit)
     })
 
     // search next line for serial/tag
@@ -44,14 +44,30 @@ const handleSheetSingleColumnAsLine = (rowsRes, nextCol, colSplit, rack) => {
     Object.keys(colSplitObj).length > 1 && rowsRes.push(colSplitObj)
 }
 
+const trimAndReplace = (str) => {
+    return String(str)
+        .trim()
+        .replace(replaceRegex, ' ')
+}
 
-const handleNextColsLineAsLine = (row, index, rowsRes, rowObj, rack, allRows, rowIndex) => {
+
+const handleNextColsLineAsLine = (row, index, rowsRes, rowObj, rack) => {
     for (let i = 0; i < MAX_COLUMNS_IN_DB; i++) {
         const element = row[index + i];
-        element && buildLineObject(rowObj, String(element).trim())
+        if (String(element).includes('0001 (8 disks)')) {
+            // add serial in this edge case
+            const serialEdgeCase = row[index + MAX_COLUMNS_IN_DB]
+            rowObj.unknown = trimAndReplace(element)
+            rowObj.serial = trimAndReplace(serialEdgeCase)
+            // console.log(rowObj)
+            continue
+        }
+        element && buildLineObject(rowObj, element)
     }
     rowObj.location = rack
-    Object.keys(rowObj).length > 1 && rowsRes.push(rowObj)
+    shouldAddToRows = !rowObj?.name?.includes('empty') ?
+        Object.keys(rowObj).length > 1 : Object.keys(rowObj).length > 2
+    shouldAddToRows && rowsRes.push(rowObj)
 }
 
 const removeTheseLines = (col) => {
@@ -61,7 +77,7 @@ const removeTheseLines = (col) => {
         .some(removeToken => col.includes(removeToken))
 }
 
-const parseRow = (row, rack, rowsRes, allRows, rowIndex) => {
+const parseRow = (row, rack, rowsRes) => {
     let rowObj = {}
     // loop over each col in the row
     const shouldSkipRow = row.some(col => removeTheseLines(col))
@@ -81,13 +97,34 @@ const parseRow = (row, rack, rowsRes, allRows, rowIndex) => {
             const splitChar = col.includes('\n') ? '\n' : ' - '
             // I use includes() since it's better than match() time wise
             // Sometimes, we got lines that have TAG, IP, MAC and we need to handle them
-            if (col.includes('TAG:')) {
-                colSplit = col
-                    .replace('-', '')
-                    .replace('TAG:', '-')
-                    .replace('IP:', '-')
-                    .replace('MAC:', '-')
-                    .split('-')
+            if (col.includes('TAG') || col.includes('IP') || col.includes('MAC')) {
+                // does MAC address comes AFTER 'MAC:'?
+                const splitMAC = col.split('MAC:')
+                const isMacExistBeforeMAC = splitMAC[0]
+                    .split(' ')
+                    .some(e => getColumnTypeByTemplate(e) === 'mac')
+                if (isMacExistBeforeMAC) { // means MAC address is before 'MAC:'
+                    colSplit = col
+                        .split(' ')
+                        .join('-')
+                        .replace('-', '')
+                        .replace('TAG:', '-')
+                        .replace('IP:', '-')
+                        .replace('MAC:', '-')
+                        .split('-')
+                        .filter(e => e)
+                } else {
+                    colSplit = col
+                        .replace('-', '')
+                        .replace('TAG:', '-')
+                        .replace('IP:', '-')
+                        .replace('MAC:', '-')
+                        .split(col.includes('DELL') ? '-' : '-')
+                        .filter(e => e)
+                }
+
+                // colSplit = colSplit.map(c => c.split(' '))
+                // rack === 'IBM-A2' && console.log(colSplit)
             } else if ((col.includes('PDU'))) { // when we have PDU we got ' - ' in the name, we should handle that
                 const indexToSlice = col.match(' - ').index
                 const firstDashRemover = col.slice(0, indexToSlice) + col.slice(indexToSlice + 2)
@@ -104,7 +141,7 @@ const parseRow = (row, rack, rowsRes, allRows, rowIndex) => {
                 handleSheetSingleColumnAsLine(rowsRes, nextCol, colSplit, rack)
                 // i += row.length
             } else if (colType === 'name' || colType === 'ip') {
-                handleNextColsLineAsLine(row, i, rowsRes, rowObj, rack, allRows, rowIndex)
+                handleNextColsLineAsLine(row, i, rowsRes, rowObj, rack)
                 i += MAX_COLUMNS_IN_DB - 1 // if we found a line, continue to the next line
             }
             rowObj = {}
@@ -119,7 +156,7 @@ exports.parseRanges = (rangesRows, pages) => {
         const rack = pages[i] // get current rack name
         const rows = range.values
         if (rows.length) {
-            rows.forEach((row, i) => parseRow(row, rack, rowsRes, rows, i));
+            rows.forEach((row, i) => parseRow(row, rack, rowsRes));
         } else {
             console.log('No data found.');
         }

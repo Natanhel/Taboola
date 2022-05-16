@@ -14,10 +14,10 @@ const regexs = [
     // I assume name starts with rest*, test*, storage*, node* or xxXX*
     // assumed 'empty' is a name as well.
     { name: 'name', regex: /DELL-[A-Z0-9]*/g },
-    { name: 'name', regex: /PDU A RED/g },
-    { name: 'name', regex: /PDU A BLUE/g },
-    { name: 'name', regex: /PDU B RED/g },
-    { name: 'name', regex: /PDU B BLUE/g },
+    { name: 'unknown', regex: /PDU A RED/g },
+    { name: 'unknown', regex: /PDU A BLUE/g },
+    { name: 'unknown', regex: /PDU B RED/g },
+    { name: 'unknown', regex: /PDU B BLUE/g },
     { name: 'name', regex: /node[0-9]{3}/g },
     { name: 'name', regex: /ml[0-9]{3}/g },
     { name: 'name', regex: /art[0-9]{3}/g },
@@ -26,8 +26,6 @@ const regexs = [
     { name: 'name', regex: /([a-z]{3})[0-9]{3}/g },
     { name: 'name', regex: /rd-db|empty/g },
     { name: 'name', regex: /0001 \(8disk\) ZZb-slave/g },
-
-    // { name: 'name', regex: /tes_-[-_0-9 ()\s]*/g },
     { name: 'name', regex: /(\?\?\?|T999|qa|HP|T777|alert|master|test|storage|CHASSIS|[a-z]{2}[A-Z]{2})[-_0-9 ()\s]*/g },
 
     { name: 'serial', regex: /[-0-9A-Z\s]{5,7}|[TAG\:][-0-9A-Z\s]*/g },
