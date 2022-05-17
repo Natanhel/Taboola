@@ -27,7 +27,6 @@ let lineIndex
 // regex to sanitize the cell from malicious data injection
 const replaceRegex = /[^a-zA-Z0-9 .:()_-]/g
 
-
 // this is not a pure function, it needs to edit rowObj
 function buildLineObject(rowObj, col) {
     const type = getColumnTypeByTemplate(col)
@@ -61,8 +60,13 @@ const trimAndReplace = (str) => {
         .trim()
         .replace(replaceRegex, ' ')
 }
-
+// There's an edge case where some data is written in combined rows
+// I was told to ignore those cases, Google Sheets API doesn't appear to know  
+// that the lines were combined, and if they were, I would solve it by
+// checking the line range for the data.
+// This edge case appears 3 times in the data and it would be missing data. 
 const handleNextColsLineAsLine = (row, index, rowsRes, rowObj, rack) => {
+    
     for (let i = 0; i < MAX_COLUMNS_IN_DB; i++) {
         const element = row[index + i];
         // There's an edge case where the name is a line before the IP/MAC/SERIAL 
@@ -77,28 +81,29 @@ const handleNextColsLineAsLine = (row, index, rowsRes, rowObj, rack) => {
     }
 
     rowObj.location = rack
-    const hasEmptyIndication = emptyLinesIndications.some(ind => rowObj?.name?.includes(ind))
+    const hasEmptyIndication = emptyLinesIndications
+        .some(ind => rowObj?.name?.includes(ind))
     const objectKeysLength = Object.keys(rowObj).length
     // I'm checking if a line is not empty here.
     // empty means we have index and rack filled, hence - objectKeysLength > BASE_AMOUNT_KEYS
     // if the line has only emptyLinesIndications then it has 2 keys + 1 empty indication
     // hence - objectKeysLength > BASE_AMOUNT_KEYS + 1.
-    const shouldAddToRows = hasEmptyIndication ?
-        objectKeysLength > BASE_AMOUNT_KEYS + 1 : objectKeysLength > BASE_AMOUNT_KEYS
-
+    const shouldAddToRows = hasEmptyIndication
+        ? objectKeysLength > BASE_AMOUNT_KEYS + 1
+        : objectKeysLength > BASE_AMOUNT_KEYS
+    // serialAppearAlone && console.log(rowObj)
     shouldAddToRows && rowsRes.push(rowObj)
 }
 
 const removeTheseLines = (col) => {
-    return ['REAR VIEW OF RACK', 'Electricity', 'SWA', 'STORAGE',
-        'ADC-CORE02.PTK (Nexus56128)', 'ADC-CORE01.PTK (Nexus56128)'
-        , 'ADC-test_vN003.KYA', 'ADC-test_vN01']
+    return ['REAR VIEW OF', 'Electricity', 'SWA', 'STORAGE',
+        'ADC-','MARKER','PATCH PANNEL']
         .some(removeToken => col.includes(removeToken))
 }
 
+
 const splitLineByTags = (col) => {
     // does MAC address comes AFTER 'MAC:'? - edge case
-    // if(col === 'DELL-')
     let colSplit = col
     const splitMAC = col.split('MAC:')
     const isAddressBeforeMAC = splitMAC[0]
@@ -119,6 +124,14 @@ const splitLineByTags = (col) => {
         .split('-')
         .filter(e => e)
     return colSplit
+}
+
+const handleSingleSerial = (col, rowsRes, rack) => {
+    const rowObj = {}
+    rowObj.serial = trimAndReplace(col)
+    rowObj.location = rack 
+    rowObj.lineIndex = lineIndex + 1
+    rowsRes.push(rowObj)
 }
 
 const splitSingleLineSpecialCases = (col, splitChar) => {
@@ -144,9 +157,9 @@ const parseRow = (row, rack, rowsRes) => {
     // loop over each col in the row
     const shouldSkipRow = row.some(col => removeTheseLines(col))
     // using C style 'for' because I manipulate the iterator
+    let rowObj = {} // empty object for next line in DB
     for (let i = 0; !shouldSkipRow && i < row.length; i++) {
         const col = row[i]
-        let rowObj = {} // empty object for next line in DB
         let colSplit
         // clean empty cols and number in the first column
         // we can save this data if we want, but I have been told I can ignore
@@ -162,7 +175,7 @@ const parseRow = (row, rack, rowsRes) => {
             // completely beacuse the data structured in the DC might be a name
             const shouldSplit = colSplit.length > LIMIT_NAME_SPLIT
             const colType = getColumnTypeByTemplate(col)
-
+            const lastRowSerial = rowsRes[rowsRes.length-1]?.serial
             if (colHasLineBreak && shouldSplit) {
                 const nextCol = row[i + 1]
                 handleSheetSingleColumnAsLine(rowsRes, nextCol, colSplit, rack)
@@ -170,8 +183,11 @@ const parseRow = (row, rack, rowsRes) => {
                 handleNextColsLineAsLine(row, i, rowsRes, rowObj, rack)
                 i += MAX_COLUMNS_IN_DB - 1 // if we found a line, continue to the next line
                 // there's a caveat here, edge case handled inside handleNextColsLineAsLine()
+            } else if (colType === regexTypes.SERIAL && !lastRowSerial) { // single line serial
+                handleSingleSerial(col, rowsRes, rack)
             }
         }
+        rowObj = {}
     }
 }
 

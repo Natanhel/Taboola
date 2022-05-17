@@ -8,7 +8,6 @@ const spreadsheetId = '1WaSeM0q_ecSqASt28sJvCUhyEfSeC9INRtZD4HBkwq4'
 
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
-    console.log(process.env.MYSQL_URL)
     if (err) return console.log('Error loading client secret file:', err);
     // Authorize a client with credentials, then call the Google Sheets API.
     authorize(JSON.parse(content), main);
